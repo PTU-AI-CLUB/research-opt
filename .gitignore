@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+test.py
+test_pdf.pdf
+
 # C extensions
 *.so
 

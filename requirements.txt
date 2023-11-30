@@ -1,0 +1,6 @@
+transformers
+huggingface_hub
+torch 
+python-dotenv
+PyPDF2<3.0
+scholarly
