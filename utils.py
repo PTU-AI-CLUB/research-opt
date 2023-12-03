@@ -1,9 +1,13 @@
-import requests
-import os
 from scholarly import scholarly
 from typing import Dict, List, Any
+
 import fitz
 from unidecode import unidecode
+import os
+import requests
+import PIL.Image
+import io
+import shutil
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
@@ -24,8 +28,45 @@ class DocumentSummarizer:
     def _summarize(self, payload: str):
         response = requests.post(self.API_URL, headers=self.headers, json=payload)
         return response.json()[0]["summary_text"]
+
+    def _get_images(self) -> None:
+        counter = 0
+        if not os.path.exists("./images/"):
+            os.mkdir("./images/")
+        
+        for page in self.doc:
+            images = page.get_images()
+        
+            for image in images:
+                base_image = self.doc.extract_image(image[0])
+                image_data = base_image["image"]
+                ext = base_image["ext"]
+                image = PIL.Image.open(io.BytesIO(image_data))
+                image.save(open(f"./images/{self.doc.name}_image_{counter}.{ext}", "wb"))
+                counter += 1    
     
-    def summarize(self) -> str:
+    def _save(self, summarized_content: str) -> None:
+        out_doc = fitz.open()
+        page = out_doc.new_page()
+        page.insert_text((50, 50), summarized_content, fontsize=12)
+
+
+        for _, _, files in os.walk("./images"):
+            for file in files:
+                img = fitz.open(f"./images/{file}")
+                rect = img[0].rect
+                pdfbytes = img.convert_to_pdf()
+                img.close()
+                imgPDF = fitz.open("pdf", pdfbytes)
+                page = out_doc.new_page(width=rect.width,
+                                        height=rect.height)
+                page.show_pdf_page(rect, imgPDF, 0)
+
+        out_doc.save(f"{self.doc.name}_summarized.pdf")
+        out_doc.close()
+        shutil.rmtree("./images/")
+
+    def summarize(self) -> None:
         summarized_doc = {}
         for i, content in enumerate(self.toc):
             title = content[1]
@@ -55,10 +96,10 @@ class DocumentSummarizer:
         
         summarized_paper = ""
         for title, content in summarized_doc.items():
-            summarized_paper += title + "\n" + content
-        return summarized_paper
-    
+            summarized_paper += title + "\n" + content + "\n"
 
+        self._get_images()
+        self._save(summarized_content=summarized_paper)        
 
 
 def get_author_details(auth_name: str) -> Dict[str, Any]:
