@@ -1,6 +1,7 @@
 from scholarly import scholarly
 from typing import Dict, List, Any
 
+from paperswithcode import PapersWithCodeClient
 from fpdf import FPDF
 import fitz
 from unidecode import unidecode
@@ -37,7 +38,7 @@ class DocumentSummarizer:
         
         for page in self.doc:
             images = page.get_images()
-
+        
             for image in images:
                 base_image = self.doc.extract_image(image[0])
                 image_data = base_image["image"]
@@ -46,8 +47,16 @@ class DocumentSummarizer:
                 image.save(open(f"./images/{self.doc.name}_image_{counter}.{ext}", "wb"))
                 counter += 1    
 
+    def _get_abstract(self):
+        page_1_text = unidecode(self.doc[0].get_text())
+        start_idx = page_1_text.lower().find("abstract") + len("abstract")
+        end_idx = page_1_text.lower().find(self.toc[0][1].lower())
+        return page_1_text[start_idx:end_idx].replace("\n", " ")
+
     def summarize(self) -> None:
+
         summarized_doc = {}
+        summarized_doc["Abstract"] = self._get_abstract()
         for i, content in enumerate(self.toc):
             title = content[1]
             page_no = content[2]
@@ -129,6 +138,16 @@ def get_author_details(auth_name: str) -> Dict[str, Any]:
 		"interests" : auth_details["interests"],
 		"citations" : auth_details["citedby"]
     }
+
+
+
+def download_ref_papers(title: str):
+    client = PapersWithCodeClient()
+    papers = client.search(q=title)
+    pdf_url = papers.results[0].paper.url_pdf
+    response = requests.get(pdf_url)
+    with open(f"{title}.pdf", "wb") as f:
+        f.write(response.content)
 
 
 if __name__ == "__main__":
