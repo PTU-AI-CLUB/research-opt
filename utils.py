@@ -1,9 +1,11 @@
 from scholarly import scholarly
 from typing import Dict, List, Any
 
+from fpdf import FPDF
 import fitz
 from unidecode import unidecode
 import os
+from PIL import Image
 import requests
 import PIL.Image
 import io
@@ -12,13 +14,12 @@ from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
 
-
 class DocumentSummarizer:
 
     API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
 
-    # API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
-    API_URL = "https://api-inference.huggingface.co/models/Falconsai/text_summarization"
+    API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
+    # API_URL = "https://api-inference.huggingface.co/models/Falconsai/text_summarization"
     headers = {"Authorization": f"Bearer {API_TOKEN}"}
 
     def __init__(self, path: str) -> None:
@@ -36,7 +37,7 @@ class DocumentSummarizer:
         
         for page in self.doc:
             images = page.get_images()
-        
+
             for image in images:
                 base_image = self.doc.extract_image(image[0])
                 image_data = base_image["image"]
@@ -44,27 +45,6 @@ class DocumentSummarizer:
                 image = PIL.Image.open(io.BytesIO(image_data))
                 image.save(open(f"./images/{self.doc.name}_image_{counter}.{ext}", "wb"))
                 counter += 1    
-    
-    def _save(self, summarized_content: str) -> None:
-        out_doc = fitz.open()
-        page = out_doc.new_page()
-        page.insert_text((50, 50), summarized_content, fontsize=12)
-
-
-        for _, _, files in os.walk("./images"):
-            for file in files:
-                img = fitz.open(f"./images/{file}")
-                rect = img[0].rect
-                pdfbytes = img.convert_to_pdf()
-                img.close()
-                imgPDF = fitz.open("pdf", pdfbytes)
-                page = out_doc.new_page(width=rect.width,
-                                        height=rect.height)
-                page.show_pdf_page(rect, imgPDF, 0)
-
-        out_doc.save(f"{self.doc.name}_summarized.pdf")
-        out_doc.close()
-        shutil.rmtree("./images/")
 
     def summarize(self) -> None:
         summarized_doc = {}
@@ -94,12 +74,50 @@ class DocumentSummarizer:
                 content_text = content_text[512:]
             summarized_doc[title] = summzarized_content_text
         
-        summarized_paper = ""
-        for title, content in summarized_doc.items():
-            summarized_paper += title + "\n" + content + "\n"
-
         self._get_images()
-        self._save(summarized_content=summarized_paper)        
+        return summarized_doc
+     
+class PdfDoc(FPDF):
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("helvetica", "I", 10)
+        self.cell(0, 10, f"Page {self.page_no()}", align="C")
+    
+    def write(self, doc: Dict[str, str]):
+        self._write_doc(doc)
+        self._write_images()
+    
+    def _write_doc(self, doc: Dict[str, str]):
+        for title in doc:
+            text = doc[title]
+            self.set_font("times", "B", size=16)
+            self.cell(0, 15, text=title)
+            self.ln()
+            if len(text)>0:
+                self.set_font("times", "", 12)
+                self.multi_cell(0, 5, text=text)
+                self.ln()
+    
+    def _write_images(self):
+        self.add_page()
+        self.set_font(family="helvetica", style="B", size=16)
+        self.cell(0, 10, text="Figures", align="C")
+        self.ln()
+        counter = 1
+        for _, _, files in os.walk("./images/"):
+            for file in files:
+                self.image(name=Image.open(f"./images/{file}"),
+                        w=75,
+                        h=75,
+                        x=self.w/2 - 37.5)
+                self.ln()
+                self.set_font(family="times", style="I", size=10)
+                self.cell(0, 5, text=f"Figure {counter}", align="C")
+                self.ln(20)
+                counter += 1
+            
+        shutil.rmtree("./images/")
 
 
 def get_author_details(auth_name: str) -> Dict[str, Any]:
@@ -114,7 +132,10 @@ def get_author_details(auth_name: str) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    # print(summarize("""The tower is 324 metres (1,063 ft) tall, about the same height as an 81-storey building, and the tallest structure in Paris. Its base is square, measuring 125 metres (410 ft) on each side. During its construction, the Eiffel Tower surpassed the Washington Monument to become the tallest man-made structure in the world, a title it held for 41 years until the Chrysler Building in New York City was finished in 1930. It was the first structure to reach a height of 300 metres. Due to the addition of a broadcasting aerial at the top of the tower in 1957, it is now taller than the Chrysler Building by 5.2 metres (17 ft). Excluding transmitters, the Eiffel Tower is the second tallest free-standing structure in France after the Millau Viaduct."""))
-    # paper_title = 'Attention is all you need'
-    # get_reference_pdfs(paper_title)
-    print(get_author_details("K Sathiyamurthy"))
+    ds = DocumentSummarizer("test_file.pdf")
+    doc = ds.summarize()
+    pdf = PdfDoc(orientation="P", unit="mm", format="letter")
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.write(doc=doc)
+    pdf.output("summarized_doc.pdf")

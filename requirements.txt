@@ -4,3 +4,4 @@ torch
 python-dotenv
 PyPDF2<3.0
 scholarly
+fpdf2
