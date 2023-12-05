@@ -1,21 +1,30 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "summarize_pdf") {
-      const pdfData = message.pdfData;
-  
-      // Use fetch or other means to send the PDF data to your Python script
-      // Example:
-      fetch('http://localhost:5000/summarize', {
-        method: 'POST',
-        body: JSON.stringify({ pdfData }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
+  if (message.action === "summarize_pdf") {
+    const pdfUrl = message.pdfUrl;
+    sendPDFUrlToBackend(pdfUrl)
+      .then(() => {
+        informUser("PDF Summarization in progress...");
       })
-      .then(response => response.json())
-      .then(data => {
-        // Handle the summarized data here, e.g., download it
-      })
-      .catch(error => console.error('Error:', error));
+      .catch(error => console.error('Error sending PDF URL:', error));
+  }
+});
+
+function sendPDFUrlToBackend(pdfUrl) {
+  return fetch('http://localhost:5000/process_pdf', {
+    method: 'POST',
+    body: JSON.stringify({ pdfUrl }),
+    headers: {
+      'Content-Type': 'application/json'
     }
+  })
+  .catch(error => Promise.reject(error));
+}
+
+function informUser(message) {
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'hello_extensions.png', 
+    title: 'PDF Processing',
+    message: message
   });
-  
+}

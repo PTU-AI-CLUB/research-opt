@@ -1,24 +1,31 @@
 from flask import Flask, request, jsonify
 from utils import DocumentSummarizer, PdfDoc
+import os
 
 app = Flask(__name__)
 
-@app.route('/summarize', methods=['POST'])
-def summarize_document():
+@app.route("/process_pdf", methods=["POST"])
+def process_pdf():
     data = request.get_json()
-    document_content = data.get('documentContent')
-    summary = "This is a summary of the document."
-    return jsonify({'summary': summary})
 
-@app.route('/download-references', methods=['POST'])
-def download_references():
-    # Implement download reference logic here
-    # Retrieve data from the request, process it, and return the result
-    data = request.get_json()
-    highlighted_references = data.get('highlightedReferences')
-    # Perform download logic...
-    # Return a link or the actual content of the downloaded references
-    return jsonify({'downloadedReferences': "Download link or content"})
+    if 'pdfUrl' in data:
+        pdf_url = data['pdfUrl']
+        ds = DocumentSummarizer(path=pdf_url)
+        doc = ds.summarize()
+        pdf = PdfDoc(orientation="P", unit="mm", format="letter")
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        pdf.write(doc=doc)
+        
+        os_name = os.name
+
+        if os_name == 'posix':  # For Unix-based systems like Linux or macOS
+            downloads_path = os.path.expanduser('~/Downloads')
+        elif os_name == 'nt':  # For Windows
+            downloads_path = os.path.join(os.path.expanduser('~'), 'Downloads')
+        
+        pdf.output(downloads_path)
+
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host="localhost", port=5000, debug=True)
