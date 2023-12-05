@@ -1,5 +1,5 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "summarize_pdf") {
+  if (message.action === "summarizePDF") {
     const pdfUrl = message.pdfUrl;
     sendPDFUrlToBackend(pdfUrl)
       .then(() => {
@@ -10,6 +10,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 function sendPDFUrlToBackend(pdfUrl) {
+  console.log("In bg.js");
   return fetch('http://localhost:5000/process_pdf', {
     method: 'POST',
     body: JSON.stringify({ pdfUrl }),

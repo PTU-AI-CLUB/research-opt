@@ -7,7 +7,7 @@ app = Flask(__name__)
 @app.route("/process_pdf", methods=["POST"])
 def process_pdf():
     data = request.get_json()
-
+    print("Here")
     if 'pdfUrl' in data:
         pdf_url = data['pdfUrl']
         ds = DocumentSummarizer(path=pdf_url)
