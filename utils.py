@@ -1,4 +1,4 @@
-from scholarly import scholarly
+# from scholarly import scholarly
 from typing import Dict, List, Any
 
 from paperswithcode import PapersWithCodeClient
@@ -129,15 +129,15 @@ class PdfDoc(FPDF):
         shutil.rmtree("./images/")
 
 
-def get_author_details(auth_name: str) -> Dict[str, Any]:
-	auth_details = scholarly.search_author(auth_name)
-	auth_details = next(auth_details)
-	return {
-		"name" : auth_details["name"],
-		"affiliation" : auth_details["affiliation"],
-		"interests" : auth_details["interests"],
-		"citations" : auth_details["citedby"]
-    }
+# def get_author_details(auth_name: str) -> Dict[str, Any]:
+# 	auth_details = scholarly.search_author(auth_name)
+# 	auth_details = next(auth_details)
+# 	return {
+# 		"name" : auth_details["name"],
+# 		"affiliation" : auth_details["affiliation"],
+# 		"interests" : auth_details["interests"],
+# 		"citations" : auth_details["citedby"]
+#     }
 
 
 
