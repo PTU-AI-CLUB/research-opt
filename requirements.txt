@@ -6,3 +6,4 @@ PyPDF2<3.0
 scholarly
 fpdf2
 paperswithcode-client
+Flask
