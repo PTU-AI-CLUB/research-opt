@@ -8,8 +8,8 @@ app = Flask(__name__)
 def process_pdf():
     data = request.get_json()
     print("Here")
-    if 'pdfUrl' in data:
-        pdf_url = data['pdfUrl']
+    if 'filePath' in data:
+        pdf_url = data['filePath']
         ds = DocumentSummarizer(path=pdf_url)
         doc = ds.summarize()
         pdf = PdfDoc(orientation="P", unit="mm", format="letter")

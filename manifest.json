@@ -1,15 +1,19 @@
 {
-    "manifest_version": 3,
-    "name": "research-opt",
-    "description": "Base Level Extension",
-    "version": "1.0",
-    "permissions": [
-        "activeTab",
-        "tabs",
-        "downloads"
-      ],    
-    "action": {
-      "default_popup": "hello.html",
-      "default_icon": "hello_extensions.png"
+  "manifest_version": 3,
+  "name": "Research Paper Summarizer",
+  "version": "1.0",
+  "description": "Summarizes research papers from PDFs",
+  "permissions": ["activeTab", "downloads", "tabs"],
+  "background": {
+    "service_worker": "extension_scripts/background.js"
+  },
+  "action": {
+    "default_popup": "extension_scripts/popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*/*pdf", "http://*/*pdf"],
+      "js": ["extension_scripts/content.js"]
     }
-  }
+  ]
+}
