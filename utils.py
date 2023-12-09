@@ -25,6 +25,7 @@ class DocumentSummarizer:
 
     def __init__(self, path: str) -> None:
         self.doc = fitz.open(path)
+        self.doc_name = self.doc.name.split("/")[-1]
         self.toc = self.doc.get_toc(simple=True)
     
     def _summarize(self, payload: str):
@@ -36,6 +37,7 @@ class DocumentSummarizer:
         if not os.path.exists("./images/"):
             os.mkdir("./images/")
         
+        
         for page in self.doc:
             images = page.get_images()
         
@@ -44,7 +46,7 @@ class DocumentSummarizer:
                 image_data = base_image["image"]
                 ext = base_image["ext"]
                 image = PIL.Image.open(io.BytesIO(image_data))
-                image.save(open(f"./images/{self.doc.name}_image_{counter}.{ext}", "wb"))
+                image.save(open(f"./images/{self.doc_name}_image_{counter}.{ext}", "wb"))
                 counter += 1    
 
     def _get_abstract(self):
