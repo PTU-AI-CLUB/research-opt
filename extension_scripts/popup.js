@@ -1,14 +1,8 @@
-document.addEventListener("DOMContentLoaded", function() {
-  const summarizeButton = document.getElementById('summarize-button');
+const summarizeButton = document.getElementById("summarize-button");
 
-  if (summarizeButton) {
-      summarizeButton.addEventListener('click', () => {
-        console.log("In popup.js");
-        chrome.runtime.sendMessage({
-          action: 'summarizePDF'
-        });
-      });
-  } else {
-    console.error("summarizeButton not found!");
-  }
+summarizeButton.addEventListener("click", async () => {
+  console.log("in popup.js");
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.sendMessage(tabs[0].id, "summarize");
+  });
 });

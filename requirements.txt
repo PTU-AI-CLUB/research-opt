@@ -7,3 +7,4 @@ scholarly
 fpdf2
 paperswithcode-client
 Flask
+Flask-Cors

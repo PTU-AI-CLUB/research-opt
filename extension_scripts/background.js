@@ -1,25 +1,38 @@
-const url = 'http://localhost:5000/process_pdf'; // Change to your backend URL
-
-function summarizePdf(filePath) {
-  console.log("In bg.js")
-  fetch(url, {
-    method: 'POST',
-    body: JSON.stringify({ filePath }),
-    headers: {
-      'Content-Type': 'application/json'
+chrome.action.onClicked.addListener(async (tab) => {
+  if(tab.url.endsWith(".pdf"))
+  {
+    fetch('http://localhost:5000/process_pdf',{
+      method: 'POST',
+      body : JSON.stringify({'filePath' : tab.url}),
+      mode : 'cors',
+      headers : {
+        'Content-type' : 'application/json'
+      }
+    })
+    .then(r => r.json())
+    .then(r => {
+      console.log(r.message);
+    }).catch((error) => {
+      console.error('Error:', error);
+    });
     }
-  })
-  .then(response => response.json())
-  .then(data => {
-    // Handle success response (e.g., show download notification)
-  })
-  .catch(error => {
-    // Handle error
-  });
-}
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'summarizePDF') {
-    summarizePdf(message.filePath);
   }
-});
+);
+
+chrome.webRequest.onBeforeSendHeaders.addListener(
+  (details) => {
+    if (details.url.startsWith("http://localhost:5000/process_pdf")) {
+      details.requestHeaders.push({
+        name: "Access-Control-Allow-Origin",
+        value: "*"
+      });
+      details.requestHeaders.push({
+        name: "Access-Control-Allow-Methods",
+        value: "GET, POST, PUT, DELETE, OPTIONS"
+      });
+    }
+    return {requestHeaders: details.requestHeaders};
+  },
+  {urls: ["<all_urls>"]},
+  ["blocking"]
+);

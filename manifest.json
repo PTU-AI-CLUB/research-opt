@@ -1,19 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "Research Paper Summarizer",
-  "version": "1.0",
-  "description": "Summarizes research papers from PDFs",
-  "permissions": ["activeTab", "downloads", "tabs"],
+  "name": "PDF Summarizer",
+  "version": "0.0.1",
+  "description": "Summarize PDF documents in Chrome",
   "background": {
     "service_worker": "extension_scripts/background.js"
   },
-  "action": {
-    "default_popup": "extension_scripts/popup.html"
-  },
-  "content_scripts": [
-    {
-      "matches": ["https://*/*pdf", "http://*/*pdf"],
-      "js": ["extension_scripts/content.js"]
-    }
-  ]
+  "permissions": ["activeTab", "tabs", "webRequest", "webRequestBlocking"],
+  "action" : {}
 }

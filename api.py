@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from utils import DocumentSummarizer, PdfDoc
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/process_pdf", methods=["POST"])
 def process_pdf():
@@ -25,6 +27,9 @@ def process_pdf():
             downloads_path = os.path.join(os.path.expanduser('~'), 'Downloads')
         
         pdf.output(downloads_path)
+        return jsonify({"message" : "success"})
+
+    return jsonify({"message" : "no success"})
 
 
 if __name__ == '__main__':
