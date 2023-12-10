@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, send_file
 from flask import redirect, url_for
-from utils import DocumentSummarizer, PdfDoc
+from utils import DocumentSummarizer, PdfDoc, search_papers_with_field
 import io
 import os
 
@@ -41,7 +41,6 @@ def summarize():
     summarized_pdf_path = os.path.join(UPLOAD_FOLDER, f"summarized_{pdf.filename.split('.')[0]}.pdf")
     summarized_pdf.output(summarized_pdf_path)
     print(pdf.filename, pdf_path)
-    # return redirect(url_for("views.view_pdf", filename=f"summarized_{pdf.filename.split('.')[0]}.pdf"))
 
     view_link = url_for('views.view_pdf', filename=f"summarized_{pdf.filename.split('.')[0]}.pdf")
     link_html = f'<a href="{view_link}" target="_blank">View Summarized PDF</a>'
@@ -54,3 +53,11 @@ def view_pdf(filename):
     print(filename)
     path = os.path.join(UPLOAD_FOLDER, filename)
     return send_file(path, mimetype="application/pdf")
+
+
+@views.route("/search_papers_related_to_field", methods=["POST"])
+def search_papers_related_to_field():
+
+    field_of_science = request.form["field_of_science"]
+    search_results = search_papers_with_field(field=field_of_science)
+    return render_template("base.html", search_results=search_results)

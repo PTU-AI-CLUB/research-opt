@@ -11,6 +11,7 @@ import requests
 import PIL.Image
 import io
 import shutil
+import arxiv
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
@@ -141,6 +142,24 @@ class PdfDoc(FPDF):
 # 		"citations" : auth_details["citedby"]
 #     }
 
+
+def search_papers_with_field(field: str,
+                             count: int=10) -> List[Dict[str, Any]]:
+    search = arxiv.Search(
+        query=field,
+        max_results=count,
+        sort_by=arxiv.SortCriterion.SubmittedDate
+    )
+    results = arxiv.Client().results(search=search)
+    results_dict = []
+    for result in results:
+        result_dict = {}
+        result_dict["title"] = result.title
+        result_dict["authors"] = result.authors
+        result_dict["summary"] = result.summary
+        results_dict.append(result_dict)
+    
+    return results_dict
 
 
 def download_ref_papers(title: str):
