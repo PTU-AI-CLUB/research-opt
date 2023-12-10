@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, send_file
+from flask import Blueprint, render_template, request, send_file, send_from_directory
 from flask import redirect, url_for
 from utils import DocumentSummarizer, PdfDoc, search_papers_with_field
 import io
@@ -7,9 +7,17 @@ import os
 views = Blueprint("views", __name__)
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')  # Define the uploads folder
+ALLOWED_EXTENSIONS = {"pdf"}
+
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+def allowed_file(file_name: str):
+    for ext in ALLOWED_EXTENSIONS:
+        if file_name.endswith(ext):
+            return True
+    return False
 
 def summarize_utility(pdf_path):
     ds = DocumentSummarizer(pdf_path)
@@ -23,41 +31,49 @@ def summarize_utility(pdf_path):
 
 @views.route("/")
 def home():
-    return render_template("base.html")
+    return render_template("index.html")
 
-@views.route("/summarize", methods=["POST"])
+@views.route("/summarize_page", methods=["GET", "POST"])
+def summarize_page():
+    return render_template("summarize.html")
+@views.route("/search_page")
+def search_page():
+    return render_template("search.html")
+
+@views.route("/summarize", methods=["GET", "POST"])
 def summarize():
     if "pdf_file" not in request.files:
-        return "<h1>No file part</h1>"
+        return redirect(request.url)
     
     pdf = request.files["pdf_file"]
 
     if pdf.filename == '':
-        return "No selected file"
-    
-    pdf_path = os.path.join(UPLOAD_FOLDER, pdf.filename)
-    pdf.save(pdf_path)
-    summarized_pdf = summarize_utility(pdf_path)
-    summarized_pdf_path = os.path.join(UPLOAD_FOLDER, f"summarized_{pdf.filename.split('.')[0]}.pdf")
-    summarized_pdf.output(summarized_pdf_path)
-    print(pdf.filename, pdf_path)
+        return redirect(request.url)
 
-    view_link = url_for('views.view_pdf', filename=f"summarized_{pdf.filename.split('.')[0]}.pdf")
-    link_html = f'<a href="{view_link}" target="_blank">View Summarized PDF</a>'
-    
-    return f"Summarization completed! {link_html}"
+    if pdf and allowed_file(pdf.filename):
 
+    
+        pdf_path = os.path.join(UPLOAD_FOLDER, pdf.filename)
+        pdf.save(pdf_path)
+        summarized_pdf = summarize_utility(pdf_path)
+        summarized_pdf_path = os.path.join(UPLOAD_FOLDER, f"summarized_{pdf.filename.split('.')[0]}.pdf")
+        summarized_pdf.output(summarized_pdf_path)
+        summarized_pdf_path = url_for("views.uploaded_file", filename=f"summarized_{pdf.filename.split('.')[0]}.pdf")
+        return render_template("summarize.html", summarized_pdf=summarized_pdf_path)
+
+    return redirect(request.url)
 
 @views.route("/view-pdf/<filename>")
 def view_pdf(filename):
-    print(filename)
     path = os.path.join(UPLOAD_FOLDER, filename)
     return send_file(path, mimetype="application/pdf")
 
+@views.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 @views.route("/search_papers_related_to_field", methods=["POST"])
 def search_papers_related_to_field():
-
     field_of_science = request.form["field_of_science"]
     search_results = search_papers_with_field(field=field_of_science)
     return render_template("base.html", search_results=search_results)

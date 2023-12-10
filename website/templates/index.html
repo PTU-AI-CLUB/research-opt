@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Welcome to research.ai</h1>
+<p>Research.ai is a cutting-edge platform leveraging artificial intelligence to aid in research tasks.</p>
+<div class="row">
+    <div class="col-md-6">
+        <a href="{{ url_for('views.summarize_page') }}" class="card-link">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Summarization</h5>
+                    <p class="card-text">
+                        Obtain concise summaries of lengthy texts.
+                    </p>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6">
+        <a href="{{ url_for('views.search_page') }}" class="card-link">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Search</h5>
+                    <p class="card-text">
+                        Effortlessly search through vast amounts of research papers.
+                    </p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

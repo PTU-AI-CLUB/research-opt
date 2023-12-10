@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <title>{% block title %} research.ai {% endblock %}</title>
+    </head>
+    <body>
+        <h1>Welcome to research.ai!</h1>
+        <h3>Summarize</h3>
+        <form action="/summarize" method="post" enctype="multipart/form-data">
+            <div class="card">
+                <label for="file">Choose a file:</label>
+                <input type="file" id="file" name="pdf_file" required>
+                <button type="submit">Upload</button>
+              </div>
+        </form>
+        <h3>Find</h3>
+        <form action="/search_papers_related_to_field" method="post">
+            <label for="field_of_science">Enter Field of Science:</label><br>
+            <input type="text" id="field_of_science" name="field_of_science"><br><br>
+            <input type="submit" value="Search in Science">
+        </form>
+
+        <div id="search_results">
+            <!-- Display search results here -->
+            {% if search_results %}
+                <h2>Search Results</h2>
+                <ul>
+                    {% for result in search_results %}
+                        <li>
+                            <strong>Title: </strong> {{ result.title }} <br>
+                            <strong>Authors: </strong>
+                            {% for author in result.authors[:-1] %}
+                                {{author.name + ", " }}
+                            {% endfor %}
+                            {{ result.authors[-1] }} <br>
+                            <strong>Abstract: </strong> {{ result.summary[:100] + "..." }} <br>
+                        </li><br><br>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </body>
+</html>
