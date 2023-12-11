@@ -7,9 +7,7 @@
     <title>research.ai</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> 
-    <!-- You might need to adjust the Bootstrap version or use a local copy -->
     <style>
-        /* Add your custom styles here */
         .navbar-custom {
             background-color: black;
             color: white;
@@ -28,6 +26,18 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('views.search_page') }}">Search</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('views.res_opt') }}">ResOpt</a>
+                </li>
+                {% if user_logged_in %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('authb.logout') }}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('authb.signup') }}">SignIn/Up</a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </nav>
@@ -38,7 +48,5 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- You might need to adjust the Bootstrap version or use a local copy -->
 </body>
-
 </html>

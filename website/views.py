@@ -52,7 +52,6 @@ def summarize():
 
     if pdf and allowed_file(pdf.filename):
 
-    
         pdf_path = os.path.join(UPLOAD_FOLDER, pdf.filename)
         pdf.save(pdf_path)
         summarized_pdf = summarize_utility(pdf_path)
@@ -80,3 +79,7 @@ def search_papers_related_to_field():
     if field_of_science:
         search_results = search_papers_with_field(field=field_of_science)
     return render_template("search.html", search_results=search_results)
+
+@views.route("/res_opt")
+def res_opt():
+    return render_template("res_opt.html")
