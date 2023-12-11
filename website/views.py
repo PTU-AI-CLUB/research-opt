@@ -72,8 +72,11 @@ def view_pdf(filename):
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
-@views.route("/search_papers_related_to_field", methods=["POST"])
+@views.route("/search_papers_related_to_field", methods=["GET", "POST"])
 def search_papers_related_to_field():
-    field_of_science = request.form["field_of_science"]
-    search_results = search_papers_with_field(field=field_of_science)
-    return render_template("base.html", search_results=search_results)
+    field_of_science = request.args.get("field_of_science", "")
+    print(field_of_science)
+    search_results = None
+    if field_of_science:
+        search_results = search_papers_with_field(field=field_of_science)
+    return render_template("search.html", search_results=search_results)

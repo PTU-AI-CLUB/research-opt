@@ -1,4 +1,38 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<h2>Welcome to Search</h2>
+<h1>Search Functionality</h1>
+<p>
+    The search functionality allows you to search for articles and retrieve relevant information.
+</p>
+
+<div class="mt-4">
+    <form action="/search" method="get">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Enter your search query" name="query" required>
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="mt-4">
+    {% if search_results %}
+        {% for article in search_results %}
+            <div style="width: 75%;">
+                <h3>{{ article.title }}</h3>
+                <p><strong>Authors:</strong> 
+                    {% for author in article.authors %}
+                        {{ author.name + ", " }}
+                    {% endfor %}
+                    {{ article.authors[-1].name }}
+                </p>
+                <p><strong>Abstract:</strong> {{ article.summary[:200] + "..." }}</p>
+                <a href="{{ article.pdf_url }}">Download</a>
+                <hr>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
 {% endblock %}
