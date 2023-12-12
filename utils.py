@@ -10,6 +10,7 @@ import requests
 import PIL.Image
 import io
 import shutil
+from pathlib import Path
 import arxiv
 from dotenv import load_dotenv, find_dotenv
 
@@ -155,9 +156,28 @@ def download_ref_papers(title: str):
     papers = client.search(q=title)
     pdf_url = papers.results[0].paper.url_pdf
     response = requests.get(pdf_url)
-    with open(f"{title}.pdf", "wb") as f:
-        f.write(response.content)
+    
+    try:
+        if response.status_code == 200:
+            downloads_folder = str(Path.home() / "Downloads")        
+            filename = pdf_url.split("/")[-1]        
+            file_path = os.path.join(downloads_folder, filename)        
+            with open(file_path, 'wb') as f:
+                f.write(response.content)
+            return True
+        else:
+            return False        
 
+    except:
+        return False
+
+
+def extract_text_from_pdf(path: str) -> str:
+    doc = fitz.open(path)
+    text = ""
+    for page_idx in range(len(doc)):
+        text += unidecode(doc[page_idx].get_text())
+    return text
 
 if __name__ == "__main__":
     ds = DocumentSummarizer("test_file.pdf")
