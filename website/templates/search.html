@@ -7,9 +7,9 @@
 </p>
 
 <div class="mt-4">
-    <form action="/search" method="get">
+    <form action="/search_papers_related_to_field" method="get">
         <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Enter your search query" name="query" required>
+            <input type="text" class="form-control" placeholder="Enter your search query" name="field_of_science" id="field_of_science" required>
             <div class="input-group-append">
                 <button class="btn btn-primary" type="submit">Search</button>
             </div>
@@ -23,7 +23,7 @@
             <div style="width: 75%;">
                 <h3>{{ article.title }}</h3>
                 <p><strong>Authors:</strong> 
-                    {% for author in article.authors %}
+                    {% for author in article.authors[:-1] %}
                         {{ author.name + ", " }}
                     {% endfor %}
                     {{ article.authors[-1].name }}

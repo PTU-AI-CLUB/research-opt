@@ -146,6 +146,7 @@ def search_papers_with_field(field: str,
         result_dict["title"] = result.title
         result_dict["authors"] = result.authors
         result_dict["summary"] = result.summary
+        result_dict["pdf_url"] = result.pdf_url
         results_dict.append(result_dict)
     
     return results_dict
@@ -170,7 +171,6 @@ def download_ref_papers(title: str):
 
     except:
         return False
-
 
 def extract_text_from_pdf(path: str) -> str:
     doc = fitz.open(path)

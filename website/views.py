@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, send_file, send_from_directory
-from flask import redirect, url_for, session
+from flask import redirect, url_for, session, jsonify
 from utils import *
 import io
 import os
@@ -81,47 +81,13 @@ def search_papers_related_to_field():
         search_results = search_papers_with_field(field=field_of_science)
     return render_template("search.html", search_results=search_results)
 
-@views.route("/res_opt")
-def res_opt():
-    return render_template("res_opt.html")
 
-@views.route("/res_opt_file_upload", methods=["GET", "POST"])
-def res_opt_file_upload():
-    if request.method == "POST":
-        if "researchDoc" in request.files:
-            file = request.files["researchDoc"]
-            path = os.path.join(UPLOAD_FOLDER, file.filename)
-            file.save(path)
-            text = extract_text_from_pdf(path=path)
-            session["text"] = text
-            session["uploaded_filename"] = file.filename
-            return render_template("res_opt.html",
-                                   extracted_text=text)
-    
-    return render_template("res_opt.html")
 
-@views.route("/chat_message", methods=["GET", "POST"])
-def chat_message():
-    
-    if request.method == "POST":
-        if "messageInput" in request.form:
-            if "chat" not in session:
-                session["chat"] = []
-            
-            user = request.form.get("messageInput")
-            
-            if user.startswith("reference: "):
-                paper_name = user[len("reference: "):]
-                is_downloaded = download_ref_papers(paper_name)
-                if is_downloaded:
-                    bot = f"{paper_name} has been downloaded"
-                else:
-                    bot = f"{paper_name} has not been downloaded"
-            else:
-                bot = "We are currently implementing other features"
-            
-            session["chat"].append([user, bot])
-
-            return render_template("res_opt.html",
-                                   messages=session["chat"])    
-    return render_template("res_opt.html")
+@views.route("/download_ref_paper", methods=["POST"])
+def download_ref_paper():
+    data = request.get_json()
+    paper_title = data.get("paper")
+    is_downloaded = download_ref_papers(paper_title)
+    if is_downloaded:
+        return jsonify({"message" : "Downloaded successfully"})
+    return jsonify({"message" : "could not be downloaded"})
